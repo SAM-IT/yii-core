@@ -8,6 +8,7 @@
 namespace yii\tests\framework\base;
 
 use yii\base\BaseObject;
+use yii\base\ResolvablePropertyInterface;
 use yii\tests\TestCase;
 
 /**
@@ -69,6 +70,14 @@ class BaseObjectTest extends TestCase
         $this->assertSame('default', $this->object->Text);
         $this->expectException('yii\exceptions\UnknownPropertyException');
         $value2 = $this->object->Caption;
+    }
+
+
+    public function testResolvableProperty()
+    {
+        $this->assertSame(1, $this->object->resolvableProperty);
+        $this->assertSame(1, $this->object->resolvableProperty);
+        $this->assertSame(2, $this->object->getResolvableProperty()->resolveProperty('resolvableProperty'));
     }
 
     public function testSetProperty()
@@ -153,6 +162,7 @@ class BaseObjectTest extends TestCase
 
 class NewObject extends BaseObject
 {
+    private $_counter = 0;
     private $_object = null;
     private $_text = 'default';
     private $_items = [];
@@ -193,4 +203,22 @@ class NewObject extends BaseObject
     public function setWriteOnly()
     {
     }
+
+    public function getResolvableProperty(): ResolvablePropertyInterface
+    {
+        $counter = $this->_counter++;
+        return new class($counter) implements ResolvablePropertyInterface {
+            private $value;
+            public function __construct($value)
+            {
+                $this->value = $value;
+            }
+
+            public function resolveProperty(string $name, BaseObject $owner)
+            {
+                return 'resolved!';
+            }
+        };
+    }
+
 }

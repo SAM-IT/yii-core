@@ -15,5 +15,5 @@ interface ResolvablePropertyInterface
      * @param BaseObject $owner The object owning the property
      * @return mixed The resolved value, this will be cached
      */
-    public function resolve(string $name, BaseObject $owner);
+    public function resolveProperty(string $name, BaseObject $owner);
 }
