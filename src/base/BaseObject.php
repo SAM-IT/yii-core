@@ -79,6 +79,7 @@ use yii\exceptions\UnknownPropertyException;
  */
 class BaseObject
 {
+    protected $_resolved = [];
     /**
      * Returns the value of an object property.
      *
@@ -92,6 +93,10 @@ class BaseObject
      */
     public function __get($name)
     {
+        if (array_key_exists($name, $this->_resolved)) {
+            return $this->_resolved[$name];
+        }
+
         $getter = 'get' . $name;
         if (method_exists($this, $getter)) {
             return $this->$getter();
@@ -139,6 +144,10 @@ class BaseObject
      */
     public function __isset($name)
     {
+        if (array_key_exists($name, $this->_resolved)) {
+            return isset($this->_resolved[$name]);
+        }
+
         $getter = 'get' . $name;
         if (method_exists($this, $getter)) {
             return $this->$getter() !== null;
@@ -253,5 +262,28 @@ class BaseObject
     public function hasMethod($name)
     {
         return method_exists($this, $name);
+    }
+
+    /**
+     * Resolves a property
+     * @param string $name
+     * @param mixed $value A possibly resolvable value
+     * @return mixed A resolved valued.
+     */
+    protected function resolve(string $name, $value)
+    {
+        while ($value instanceof ResolvablePropertyInterface) {
+            $this->_resolved[$name] = $value = $value->resolve($name, $this);
+        }
+        return $value;
+    }
+
+    /**
+     * Removes a cached resolvable property, whether it exists or not.
+     * @param string $name The name of the property
+     */
+    public function unresolve(string $name): void
+    {
+        unset($this->_resolved[$name]);
     }
 }
