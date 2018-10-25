@@ -273,7 +273,7 @@ class BaseObject
     protected function resolveProperty(string $name, $value)
     {
         while ($value instanceof ResolvablePropertyInterface) {
-            $this->_resolvedProperties[$name] = $value = $value->resolve($name, $this);
+            $this->_resolvedProperties[$name] = $value = $value->resolveProperty($name, $this);
         }
         return $value;
     }
