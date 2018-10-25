@@ -216,7 +216,7 @@ class NewObject extends BaseObject
 
             public function resolveProperty(string $name, BaseObject $owner)
             {
-                return 'resolved!';
+                return $this->value;
             }
         };
     }
