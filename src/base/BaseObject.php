@@ -79,7 +79,7 @@ use yii\exceptions\UnknownPropertyException;
  */
 class BaseObject
 {
-    protected $_resolved = [];
+    protected $_resolvedProperties = [];
     /**
      * Returns the value of an object property.
      *
@@ -93,13 +93,13 @@ class BaseObject
      */
     public function __get($name)
     {
-        if (array_key_exists($name, $this->_resolved)) {
-            return $this->_resolved[$name];
+        if (array_key_exists($name, $this->_resolvedProperties)) {
+            return $this->_resolvedProperties[$name];
         }
 
         $getter = 'get' . $name;
         if (method_exists($this, $getter)) {
-            return $this->$getter();
+            return $this->resolveProperty($name, $this->$getter());
         }
         if (method_exists($this, 'set' . $name)) {
             throw new InvalidCallException('Getting write-only property: ' . get_class($this) . '::' . $name);
@@ -144,8 +144,8 @@ class BaseObject
      */
     public function __isset($name)
     {
-        if (array_key_exists($name, $this->_resolved)) {
-            return isset($this->_resolved[$name]);
+        if (array_key_exists($name, $this->_resolvedProperties)) {
+            return isset($this->_resolvedProperties[$name]);
         }
 
         $getter = 'get' . $name;
@@ -270,10 +270,10 @@ class BaseObject
      * @param mixed $value A possibly resolvable value
      * @return mixed A resolved valued.
      */
-    protected function resolve(string $name, $value)
+    protected function resolveProperty(string $name, $value)
     {
         while ($value instanceof ResolvablePropertyInterface) {
-            $this->_resolved[$name] = $value = $value->resolve($name, $this);
+            $this->_resolvedProperties[$name] = $value = $value->resolve($name, $this);
         }
         return $value;
     }
@@ -282,8 +282,8 @@ class BaseObject
      * Removes a cached resolvable property, whether it exists or not.
      * @param string $name The name of the property
      */
-    public function unresolve(string $name): void
+    public function unresolveProperty(string $name): void
     {
-        unset($this->_resolved[$name]);
+        unset($this->_resolvedProperties[$name]);
     }
 }
